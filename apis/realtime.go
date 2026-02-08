@@ -73,7 +73,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 			e.App.SubscriptionsBroker().Unregister(ce.Client.Id())
 		}()
 
-		ce.App.Logger().Debug("Realtime connection established.", slog.String("clientId", ce.Client.Id()))
+		ce.App.Logger().Debug("Realtime connection established.", slog.String("clientId", ce.Client.Id()), slog.String("username", e.Auth.GetString("username")))
 
 		// signalize established connection (aka. fire "connect" message)
 		connectMsgEvent := new(core.RealtimeMessageEvent)
@@ -94,6 +94,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 			ce.App.Logger().Debug(
 				"Realtime connection closed (failed to deliver PB_CONNECT)",
 				slog.String("clientId", ce.Client.Id()),
+				slog.String("username", e.Auth.GetString("username")),
 				slog.String("error", connectMsgErr.Error()),
 			)
 			return nil
@@ -113,6 +114,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 					ce.App.Logger().Debug(
 						"Realtime connection closed (closed channel)",
 						slog.String("clientId", ce.Client.Id()),
+						slog.String("username", e.Auth.GetString("username")),
 					)
 					return nil
 				}
@@ -132,6 +134,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 					ce.App.Logger().Debug(
 						"Realtime connection closed (failed to deliver message)",
 						slog.String("clientId", ce.Client.Id()),
+						slog.String("username", e.Auth.GetString("username")),
 						slog.String("error", msgErr.Error()),
 					)
 					return nil
@@ -144,6 +147,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 				ce.App.Logger().Debug(
 					"Realtime connection closed (cancelled request)",
 					slog.String("clientId", ce.Client.Id()),
+					slog.String("username", e.Auth.GetString("username")),
 				)
 				return nil
 			}
@@ -210,6 +214,7 @@ func realtimeSetSubscriptions(e *core.RequestEvent) error {
 		e.App.Logger().Debug(
 			"Realtime subscriptions updated.",
 			slog.String("clientId", e.Client.Id()),
+			slog.String("username", e.Auth.GetString("username")),
 			slog.Any("subscriptions", e.Subscriptions),
 		)
 

@@ -67,6 +67,7 @@
         "type",
         "auth",
         "authId",
+        "username",
         "status",
         "method",
         "url",

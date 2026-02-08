@@ -397,7 +397,7 @@ func logRequest(event *core.RequestEvent, err error) {
 		slog.String("method", method),
 		slog.Int("status", status),
 		slog.String("referer", cutStr(event.Request.Referer(), 2000)),
-		slog.String("userAgent", cutStr(event.Request.UserAgent(), 2000)),
+		slog.String("userAgent", cutStr(safeUnescape(event.Request.UserAgent()), 2000)),
 	)
 
 	if event.Auth != nil {
@@ -405,6 +405,7 @@ func logRequest(event *core.RequestEvent, err error) {
 
 		if event.App.Settings().Logs.LogAuthId {
 			attrs = append(attrs, slog.String("authId", event.Auth.Id))
+			attrs = append(attrs, slog.String("username", event.Auth.GetString("username")))
 		}
 	} else {
 		attrs = append(attrs, slog.String("auth", ""))
@@ -441,4 +442,12 @@ func cutStr(str string, max int) string {
 		return str[:max] + "..."
 	}
 	return str
+}
+
+func safeUnescape(s string) string {
+	res, err := url.QueryUnescape(s)
+	if err != nil {
+		return s
+	}
+	return res
 }

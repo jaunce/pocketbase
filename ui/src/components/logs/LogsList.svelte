@@ -185,7 +185,7 @@
         }
 
         if (log.data.type == "request") {
-            const requestKeys = ["status", "execTime", "auth", "authId", "userIP"];
+            const requestKeys = ["status", "execTime", "authId", "userIP", "username"];
             for (let key of requestKeys) {
                 if (typeof log.data[key] != "undefined") {
                     keys.push({ key });
