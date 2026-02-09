@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -73,7 +74,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 			e.App.SubscriptionsBroker().Unregister(ce.Client.Id())
 		}()
 
-		ce.App.Logger().Debug("Realtime connection established.", slog.String("clientId", ce.Client.Id()), slog.String("username", e.Auth.GetString("username")))
+		ce.App.Logger().Debug("Realtime connection established.", slog.String("clientId", ce.Client.Id()), slog.String("username", e.Auth.GetString("username")), slog.String("userAgent", easyUnescape(e.Request.UserAgent())))
 
 		// signalize established connection (aka. fire "connect" message)
 		connectMsgEvent := new(core.RealtimeMessageEvent)
@@ -95,6 +96,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 				"Realtime connection closed (failed to deliver PB_CONNECT)",
 				slog.String("clientId", ce.Client.Id()),
 				slog.String("username", e.Auth.GetString("username")),
+				slog.String("userAgent", easyUnescape(e.Request.UserAgent())),
 				slog.String("error", connectMsgErr.Error()),
 			)
 			return nil
@@ -115,6 +117,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 						"Realtime connection closed (closed channel)",
 						slog.String("clientId", ce.Client.Id()),
 						slog.String("username", e.Auth.GetString("username")),
+						slog.String("userAgent", easyUnescape(e.Request.UserAgent())),
 					)
 					return nil
 				}
@@ -135,6 +138,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 						"Realtime connection closed (failed to deliver message)",
 						slog.String("clientId", ce.Client.Id()),
 						slog.String("username", e.Auth.GetString("username")),
+						slog.String("userAgent", easyUnescape(e.Request.UserAgent())),
 						slog.String("error", msgErr.Error()),
 					)
 					return nil
@@ -148,6 +152,7 @@ func realtimeConnect(e *core.RequestEvent) error {
 					"Realtime connection closed (cancelled request)",
 					slog.String("clientId", ce.Client.Id()),
 					slog.String("username", e.Auth.GetString("username")),
+					slog.String("userAgent", easyUnescape(e.Request.UserAgent())),
 				)
 				return nil
 			}
@@ -215,6 +220,7 @@ func realtimeSetSubscriptions(e *core.RequestEvent) error {
 			"Realtime subscriptions updated.",
 			slog.String("clientId", e.Client.Id()),
 			slog.String("username", e.Auth.GetString("username")),
+			slog.String("userAgent", easyUnescape(e.Request.UserAgent())),
 			slog.Any("subscriptions", e.Subscriptions),
 		)
 
@@ -783,4 +789,12 @@ func realtimeCanAccessRecord(
 	err = q.Limit(1).Row(&exists)
 
 	return err == nil && exists > 0
+}
+
+func easyUnescape(s string) string {
+	res, err := url.QueryUnescape(s)
+	if err != nil {
+		return s
+	}
+	return res
 }
